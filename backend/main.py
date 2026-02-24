@@ -41,7 +41,7 @@ def _safe_content_disposition(disposition_type: str, filename: str) -> str:
     )
 
 
-from . import database, models, profiles, history, tts, transcribe, config, export_import, channels, stories, __version__
+from . import database, models, profiles, history, tts, transcribe, config, export_import, channels, stories, elevenlabs_voices as _el, __version__
 from .database import get_db, Generation as DBGeneration, VoiceProfile as DBVoiceProfile
 from .utils.progress import get_progress_manager
 from .utils.tasks import get_task_manager
@@ -1800,6 +1800,68 @@ async def shutdown_event():
     # Unload models to free memory
     tts.unload_tts_model()
     transcribe.unload_whisper_model()
+
+
+# ============================================
+# ELEVENLABS VOICE AGENT ENDPOINTS
+# ============================================
+
+
+@app.get("/agent/elevenlabs/voices", response_model=models.ElevenLabsVoicesResponse)
+async def list_elevenlabs_voices():
+    """
+    List the pre-configured top-10 male and female ElevenLabs voices.
+
+    No API key is required for this endpoint.
+    """
+    voices = _el.get_all_voices()
+    male = [models.ElevenLabsVoice(**v) for v in voices if v["gender"] == "male"]
+    female = [models.ElevenLabsVoice(**v) for v in voices if v["gender"] == "female"]
+    return models.ElevenLabsVoicesResponse(male=male, female=female)
+
+
+@app.post("/agent/elevenlabs/generate")
+async def elevenlabs_generate(data: models.ElevenLabsGenerateRequest):
+    """
+    Generate speech from any text vector using an ElevenLabs voice.
+
+    The audio is returned as a streaming MP3 response.  An ElevenLabs API
+    key must be provided either via the ``api_key`` field in the request body
+    or the ``ELEVENLABS_API_KEY`` environment variable.
+    """
+    try:
+        loop = asyncio.get_event_loop()
+        audio_bytes = await loop.run_in_executor(
+            None,
+            lambda: _el.generate_speech(
+                text=data.text,
+                voice_id=data.voice_id,
+                api_key=data.api_key,
+                model_id=data.model_id,
+                stability=data.stability,
+                similarity_boost=data.similarity_boost,
+                style=data.style,
+                use_speaker_boost=data.use_speaker_boost,
+            ),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception:
+        raise HTTPException(status_code=502, detail="ElevenLabs API request failed. Check your API key and try again.")
+
+    voice = _el.get_voice_by_id(data.voice_id)
+    voice_name = voice["name"] if voice else data.voice_id
+
+    return StreamingResponse(
+        io.BytesIO(audio_bytes),
+        media_type="audio/mpeg",
+        headers={
+            "Content-Disposition": f'attachment; filename="{voice_name}.mp3"',
+            "X-Voice-Id": data.voice_id,
+            "X-Voice-Name": voice_name,
+            "X-Text-Length": str(len(data.text)),
+        },
+    )
 
 
 # ============================================

@@ -299,3 +299,44 @@ class StoryItemTrim(BaseModel):
 class StoryItemSplit(BaseModel):
     """Request model for splitting a story item."""
     split_time_ms: int = Field(..., ge=0)  # Time within the clip to split at (relative to clip start)
+
+
+# ============================================================
+# ElevenLabs voice agent models
+# ============================================================
+
+class ElevenLabsVoice(BaseModel):
+    """Metadata for a single ElevenLabs voice."""
+    voice_id: str
+    name: str
+    gender: str
+    accent: str
+    description: str
+    use_case: str
+
+
+class ElevenLabsVoicesResponse(BaseModel):
+    """Response containing the pre-configured ElevenLabs voices."""
+    male: List[ElevenLabsVoice]
+    female: List[ElevenLabsVoice]
+
+
+class ElevenLabsGenerateRequest(BaseModel):
+    """Request model for ElevenLabs voice-agent speech generation."""
+    text: str = Field(..., min_length=1, max_length=5000, description="Text (vector) to convert to speech")
+    voice_id: str = Field(..., description="ElevenLabs voice ID from the pre-configured catalogue")
+    api_key: Optional[str] = Field(None, description="ElevenLabs API key (falls back to ELEVENLABS_API_KEY env var)")
+    model_id: str = Field(default="eleven_multilingual_v2", description="ElevenLabs model ID")
+    stability: float = Field(default=0.5, ge=0.0, le=1.0, description="Voice stability")
+    similarity_boost: float = Field(default=0.75, ge=0.0, le=1.0, description="Similarity boost")
+    style: float = Field(default=0.0, ge=0.0, le=1.0, description="Style exaggeration")
+    use_speaker_boost: bool = Field(default=True, description="Enable speaker boost")
+
+
+class ElevenLabsGenerateResponse(BaseModel):
+    """Response model after a successful ElevenLabs generation."""
+    voice_id: str
+    voice_name: str
+    text_length: int
+    audio_size_bytes: int
+    model_id: str
