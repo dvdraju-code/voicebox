@@ -54,6 +54,15 @@
               "responseFormat": "text"
             }
           }
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+            }
+          ]
         }
       },
       "onError": "continueErrorOutput"
@@ -69,7 +78,7 @@
       ],
       "parameters": {
         "method": "GET",
-        "url": "https://www.cisa.gov/feeds/hns.xml",
+        "url": "https://www.cisa.gov/cybersecurity-advisories/all.xml",
         "options": {
           "timeout": 10000,
           "response": {
