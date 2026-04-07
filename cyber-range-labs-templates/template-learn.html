@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRL - LEARN Template</title>
+<style>
+  /* ============================================================
+     CYBER RANGE LABS — Template 3: LEARN / EDUCATIONAL
+     Use for: Tips, How-To, Awareness, Best Practices
+     Canvas: 1080x1080px (Instagram Square)
+     Slightly warmer, more approachable feel — still dark & clean
+  ============================================================ */
+
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=Share+Tech+Mono&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px;
+    height: 1080px;
+    background: #10101E;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ─── Gradient background ─── */
+  .bg-gradient {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 120% 60% at 50% 0%, rgba(123,47,190,0.15) 0%, transparent 60%),
+      radial-gradient(ellipse 80% 80% at 100% 100%, rgba(74,16,130,0.18) 0%, transparent 60%);
+    z-index: 0;
+  }
+
+  /* ─── Very subtle noise texture via SVG ─── */
+  .bg-noise {
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    z-index: 0;
+  }
+
+  /* ─── Top gradient bar (purple, wide) ─── */
+  .top-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #4A1082 0%, #7B2FBE 40%, #9D4EDD 70%, #B06EE8 100%);
+    z-index: 10;
+  }
+
+  /* ─── Large number background (watermark) ─── */
+  .bg-number {
+    position: absolute;
+    right: -20px;
+    bottom: 60px;
+    font-size: 480px;
+    font-weight: 900;
+    color: rgba(123,47,190,0.04);
+    line-height: 1;
+    z-index: 0;
+    letter-spacing: -0.05em;
+    user-select: none;
+  }
+
+  /* ─── Main container ─── */
+  .container {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    height: 100%;
+    padding: 52px 60px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ─── Header ─── */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 42px;
+  }
+
+  .logo-svg { width: 48px; height: 48px; flex-shrink: 0; }
+  .company-name { display: flex; flex-direction: column; line-height: 1.1; }
+  .company-cyber { font-size: 14px; font-weight: 900; letter-spacing: 0.25em; color: #FFFFFF; text-transform: uppercase; }
+  .company-range-labs { font-size: 14px; font-weight: 400; letter-spacing: 0.22em; color: #8B55C8; text-transform: uppercase; }
+
+  .header-spacer { flex: 1; }
+
+  /* ─── Learn badge (no red — educational is calm) ─── */
+  .learn-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(176, 110, 232, 0.15);
+    border: 1px solid rgba(176, 110, 232, 0.35);
+    border-radius: 20px;
+    padding: 8px 20px;
+  }
+
+  .learn-text {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: #B06EE8;
+    text-transform: uppercase;
+  }
+
+  /* ─── Topic row ─── */
+  .topic-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .topic-emoji { font-size: 32px; }
+
+  .topic-text {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: #9D4EDD;
+    text-transform: uppercase;
+  }
+
+  /* ─── Main headline ─── */
+  .headline {
+    font-size: 50px;
+    font-weight: 800;
+    line-height: 1.12;
+    color: #FFFFFF;
+    margin-bottom: 30px;
+    letter-spacing: -0.02em;
+    max-width: 880px;
+  }
+
+  .headline .accent { color: #B06EE8; }
+  .headline .accent2 { color: #9D4EDD; }
+
+  /* ─── Steps / numbered list ─── */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-bottom: 36px;
+    flex: 1;
+  }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 18px 22px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(123,47,190,0.2);
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s;
+  }
+
+  /* Left gradient glow on each step */
+  .step::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, #9D4EDD, #4A1082);
+  }
+
+  .step-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7B2FBE, #4A1082);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    color: #FFFFFF;
+    flex-shrink: 0;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .step-content { flex: 1; }
+
+  .step-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin-bottom: 4px;
+  }
+
+  .step-desc {
+    font-size: 15px;
+    font-weight: 400;
+    color: #9A9AB8;
+    line-height: 1.4;
+  }
+
+  .step-emoji {
+    font-size: 22px;
+    align-self: center;
+  }
+
+  /* ─── Bottom CTA / tip box ─── */
+  .tip-box {
+    background: linear-gradient(135deg, rgba(123,47,190,0.18), rgba(74,16,130,0.12));
+    border: 1px solid rgba(157,78,221,0.3);
+    border-radius: 10px;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .tip-icon { font-size: 26px; flex-shrink: 0; }
+
+  .tip-text {
+    font-size: 16px;
+    color: #C8B8E8;
+    line-height: 1.4;
+  }
+
+  .tip-text strong { color: #FFFFFF; }
+
+  /* ─── Footer ─── */
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 18px;
+    border-top: 1px solid rgba(123,47,190,0.2);
+  }
+
+  .hashtags {
+    font-size: 14px;
+    color: #6B35A8;
+    font-weight: 500;
+  }
+
+  .footer-mono {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: #4A4A6A;
+    letter-spacing: 0.08em;
+  }
+
+</style>
+</head>
+<body>
+
+  <!-- Background layers -->
+  <div class="bg-gradient"></div>
+  <div class="bg-noise"></div>
+
+  <!-- Watermark number -->
+  <div class="bg-number">5</div>
+
+  <!-- Top bar -->
+  <div class="top-bar"></div>
+
+  <!-- Main content -->
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <!-- Logo SVG -->
+      <svg class="logo-svg" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50 5 L90 22 L90 65 C90 85 70 100 50 108 C30 100 10 85 10 65 L10 22 Z" fill="rgba(123,47,190,0.08)" stroke="rgba(176,110,232,0.5)" stroke-width="2"/>
+        <path d="M25 25 L75 25 L75 48 C75 48 60 55 50 55 L25 55 Z" fill="url(#seg1c)"/>
+        <path d="M50 55 L75 48 L75 80 L55 92 Z" fill="url(#seg2c)"/>
+        <path d="M25 55 L50 55 L35 80 L25 75 Z" fill="url(#seg3c)"/>
+        <rect x="68" y="18" width="16" height="12" rx="2" fill="#E8294C"/>
+        <line x1="25" y1="55" x2="75" y2="55" stroke="#10101E" stroke-width="3"/>
+        <line x1="50" y1="25" x2="50" y2="55" stroke="#10101E" stroke-width="3"/>
+        <defs>
+          <linearGradient id="seg1c" x1="25" y1="25" x2="75" y2="55" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#B06EE8"/>
+            <stop offset="100%" stop-color="#8B44C8"/>
+          </linearGradient>
+          <linearGradient id="seg2c" x1="50" y1="48" x2="75" y2="92" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#9D4EDD"/>
+            <stop offset="100%" stop-color="#5A1A9A"/>
+          </linearGradient>
+          <linearGradient id="seg3c" x1="25" y1="55" x2="50" y2="80" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#B06EE8"/>
+            <stop offset="100%" stop-color="#7B2FBE"/>
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <div class="company-name">
+        <span class="company-cyber">Cyber</span>
+        <span class="company-range-labs">Range Labs</span>
+      </div>
+
+      <div class="header-spacer"></div>
+
+      <div class="learn-badge">
+        <span class="learn-text">🎓 &nbsp;Learn</span>
+      </div>
+    </div>
+
+    <!-- Topic -->
+    <div class="topic-row">
+      <span class="topic-emoji">🔐</span>
+      <span class="topic-text">Password Security // Quick Guide</span>
+    </div>
+
+    <!-- Headline -->
+    <div class="headline">
+      <span class="accent">5 Password Habits</span> Every<br>
+      Security Pro Follows —<br>
+      <span class="accent2">Do You?</span>
+    </div>
+
+    <!-- Steps -->
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <div class="step-title">Never Reuse Passwords</div>
+          <div class="step-desc">One breach = everything breached. Use unique passwords per account.</div>
+        </div>
+        <span class="step-emoji">🚫</span>
+      </div>
+
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <div class="step-title">Use a Password Manager</div>
+          <div class="step-desc">Bitwarden (free), KeePass (local). Let it generate 20+ char passwords.</div>
+        </div>
+        <span class="step-emoji">🔒</span>
+      </div>
+
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <div class="step-title">Enable MFA Everywhere</div>
+          <div class="step-desc">Authenticator apps &gt; SMS. Hardware keys are even better.</div>
+        </div>
+        <span class="step-emoji">📱</span>
+      </div>
+
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-content">
+          <div class="step-title">Check HaveIBeenPwned</div>
+          <div class="step-desc">Know if your email was exposed in a data breach. Check monthly.</div>
+        </div>
+        <span class="step-emoji">🔍</span>
+      </div>
+
+      <div class="step">
+        <div class="step-num">05</div>
+        <div class="step-content">
+          <div class="step-title">Passphrases Beat Passwords</div>
+          <div class="step-desc">"Purple-Shields-Cyber-Labs-42!" is stronger AND easier to remember.</div>
+        </div>
+        <span class="step-emoji">💪</span>
+      </div>
+    </div>
+
+    <!-- Tip box -->
+    <div class="tip-box">
+      <span class="tip-icon">⚡</span>
+      <span class="tip-text"><strong>Pro Tip:</strong> Your password manager's master password should be a 6-word passphrase you've never used online before.</span>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <span class="hashtags">#CyberSecurity &nbsp; #Infosec &nbsp; #PasswordSecurity &nbsp; #CyberTips</span>
+      <span class="footer-mono">07.04.2025 // CRL-LEARN</span>
+    </div>
+
+  </div>
+
+</body>
+</html>
