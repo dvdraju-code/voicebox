@@ -2,181 +2,191 @@
   "name": "Cyber Range Labs \u2014 Auto Post Generator",
   "nodes": [
     {
-      "parameters": {},
-      "id": "node-trigger",
+      "id": "n01",
       "name": "\u25b6 Run Manually",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
-      "position": {
-        "x": 200,
-        "y": 300
-      }
+      "position": [
+        240,
+        300
+      ],
+      "parameters": {}
     },
     {
-      "parameters": {
-        "url": "https://feeds.feedburner.com/TheHackersNews",
-        "options": {
-          "timeout": 10000,
-          "redirect": {
-            "redirect": {
-              "followRedirects": true,
-              "maxRedirects": 5
-            }
-          }
-        }
-      },
-      "id": "node-rss-1",
+      "id": "n02",
       "name": "RSS: The Hacker News",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": {
-        "x": 460,
-        "y": 60
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
+      "position": [
+        480,
+        60
+      ],
       "parameters": {
-        "url": "https://www.bleepingcomputer.com/feed/",
+        "method": "GET",
+        "url": "https://feeds.feedburner.com/TheHackersNews",
         "options": {
           "timeout": 10000,
-          "redirect": {
-            "redirect": {
-              "followRedirects": true,
-              "maxRedirects": 5
+          "response": {
+            "response": {
+              "responseFormat": "text"
             }
           }
         }
       },
-      "id": "node-rss-2",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "n03",
       "name": "RSS: BleepingComputer",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": {
-        "x": 460,
-        "y": 220
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
+      "position": [
+        480,
+        220
+      ],
       "parameters": {
-        "url": "https://www.cisa.gov/feeds/hns.xml",
+        "method": "GET",
+        "url": "https://www.bleepingcomputer.com/feed/",
         "options": {
           "timeout": 10000,
-          "redirect": {
-            "redirect": {
-              "followRedirects": true,
-              "maxRedirects": 5
+          "response": {
+            "response": {
+              "responseFormat": "text"
             }
           }
         }
       },
-      "id": "node-rss-3",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "n04",
       "name": "RSS: CISA Alerts",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": {
-        "x": 460,
-        "y": 380
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
+      "position": [
+        480,
+        380
+      ],
       "parameters": {
-        "url": "https://www.darkreading.com/rss.xml",
+        "method": "GET",
+        "url": "https://www.cisa.gov/feeds/hns.xml",
         "options": {
           "timeout": 10000,
-          "redirect": {
-            "redirect": {
-              "followRedirects": true,
-              "maxRedirects": 5
+          "response": {
+            "response": {
+              "responseFormat": "text"
             }
           }
         }
       },
-      "id": "node-rss-4",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "n05",
       "name": "RSS: Dark Reading",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": {
-        "x": 460,
-        "y": 540
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
+      "position": [
+        480,
+        540
+      ],
       "parameters": {
-        "url": "https://krebsonsecurity.com/feed/",
+        "method": "GET",
+        "url": "https://www.darkreading.com/rss.xml",
         "options": {
           "timeout": 10000,
-          "redirect": {
-            "redirect": {
-              "followRedirects": true,
-              "maxRedirects": 5
+          "response": {
+            "response": {
+              "responseFormat": "text"
             }
           }
         }
       },
-      "id": "node-rss-5",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "n06",
       "name": "RSS: Krebs on Security",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": {
-        "x": 460,
-        "y": 700
+      "position": [
+        480,
+        700
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://krebsonsecurity.com/feed/",
+        "options": {
+          "timeout": 10000,
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
       },
       "onError": "continueErrorOutput"
     },
     {
-      "parameters": {
-        "mode": "append",
-        "options": {}
-      },
-      "id": "node-merge",
+      "id": "n07",
       "name": "Merge RSS",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
-      "position": {
-        "x": 720,
-        "y": 300
+      "position": [
+        720,
+        420
+      ],
+      "parameters": {
+        "mode": "append",
+        "options": {}
       }
     },
     {
-      "parameters": {
-        "jsCode": "\nconst items = [];\nconst seenLinks = new Set();\n\nfor (const input of $input.all()) {\n  const xml = input.json.data || input.json.body || '';\n  if (!xml) continue;\n\n  // Extract all <item> blocks\n  const itemMatches = xml.matchAll(/<item[^>]*>([\\s\\S]*?)<\\/item>/gi);\n  for (const m of itemMatches) {\n    const block = m[1];\n\n    const tag = (name) => {\n      const r = block.match(new RegExp(`<${name}[^>]*>(?:<!\\\\[CDATA\\\\[)?([\\\\s\\\\S]*?)(?:\\\\]\\\\]>)?<\\\\/${name}>`, 'i'));\n      return r ? r[1].trim() : '';\n    };\n\n    const link    = tag('link') || tag('guid');\n    const title   = tag('title').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&#039;/g,\"'\").replace(/&quot;/g,'\"');\n    const desc    = tag('description').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').trim().slice(0,400);\n    const pubDate = tag('pubDate');\n\n    // Try to get image from media:content, enclosure, or og tag in description\n    let imageUrl = '';\n    const mediaMatch = block.match(/media:content[^>]+url=\"([^\"]+)\"/i)\n                    || block.match(/enclosure[^>]+url=\"([^\"]+)\"/i);\n    if (mediaMatch) imageUrl = mediaMatch[1];\n\n    if (!link || seenLinks.has(link)) continue;\n    seenLinks.add(link);\n\n    items.push({ title, link, desc, pubDate, imageUrl });\n  }\n}\n\n// Sort by most recent (if pubDate available), take top 5\nitems.sort((a,b) => {\n  const da = a.pubDate ? new Date(a.pubDate) : new Date(0);\n  const db = b.pubDate ? new Date(b.pubDate) : new Date(0);\n  return db - da;\n});\n\nreturn items.slice(0, 5).map(a => ({ json: a }));\n"
-      },
-      "id": "node-parse",
+      "id": "n08",
       "name": "Parse RSS Articles",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": {
-        "x": 980,
-        "y": 300
+      "position": [
+        960,
+        420
+      ],
+      "parameters": {
+        "jsCode": "\nconst items     = [];\nconst seenLinks = new Set();\n\nfor (const input of $input.all()) {\n  // HTTP Request stores the body in different places depending on content-type\n  const raw = input.json.data || input.json.body\n    || (typeof input.json === 'string' ? input.json : '')\n    || JSON.stringify(input.json);\n\n  const xml = typeof raw === 'string' ? raw : '';\n  if (!xml || !xml.includes('<item')) continue;\n\n  for (const m of xml.matchAll(/<item[^>]*>([\\s\\S]*?)<\\/item>/gi)) {\n    const block = m[1];\n    const tag = name => {\n      const r = block.match(\n        new RegExp(`<${name}[^>]*>(?:<!\\\\[CDATA\\\\[)?([\\\\s\\\\S]*?)(?:\\\\]\\\\]>)?<\\\\/${name}>`, 'i')\n      );\n      return r ? r[1].trim() : '';\n    };\n\n    const link  = tag('link') || tag('guid');\n    let   title = tag('title')\n      .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&#039;/g,\"'\").replace(/&quot;/g,'\"');\n    const desc  = tag('description')\n      .replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').trim().slice(0,400);\n    const pubDate = tag('pubDate');\n\n    let imageUrl = '';\n    const imgM = block.match(/media:content[^>]+url=\"([^\"]+)\"/i)\n               || block.match(/enclosure[^>]+url=\"([^\"]+)\"/i);\n    if (imgM) imageUrl = imgM[1];\n\n    if (!link || !title || seenLinks.has(link)) continue;\n    seenLinks.add(link);\n    items.push({ title, link, desc, pubDate, imageUrl });\n  }\n}\n\n// Sort newest first, take top 5\nitems.sort((a,b) => {\n  const da = a.pubDate ? new Date(a.pubDate) : new Date(0);\n  const db = b.pubDate ? new Date(b.pubDate) : new Date(0);\n  return db - da;\n});\n\nif (items.length === 0) {\n  throw new Error('No RSS articles found. Check that at least one RSS feed is reachable.');\n}\n\nreturn items.slice(0, 5).map(a => ({ json: a }));\n"
       }
     },
     {
-      "parameters": {
-        "batchSize": 1,
-        "options": {}
-      },
-      "id": "node-split",
+      "id": "n09",
       "name": "One At A Time",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
-      "position": {
-        "x": 1200,
-        "y": 300
+      "position": [
+        1200,
+        420
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
       }
     },
     {
+      "id": "n10",
+      "name": "AI: Groq",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        420
+      ],
       "parameters": {
         "method": "POST",
         "url": "https://api.groq.com/openai/v1/chat/completions",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_GROQ_API_KEY_HERE"
+            },
             {
               "name": "Content-Type",
               "value": "application/json"
@@ -190,86 +200,40 @@
           "messages": [
             {
               "role": "user",
-              "content": "You are a cybersecurity social media manager for \"Cyber Range Labs\".\n\nGiven the article title and description below, return a JSON object (no markdown, no explanation \u2014 raw JSON only).\n\nArticle Title: {{ $json.title }}\nArticle Description: {{ $json.desc }}\n\nReturn this exact JSON structure:\n{\n  \"template\": <1 for critical CVE/breach/exploit, 2 for patch/update/news, 3 for guide/tips/how-to>,\n  \"headline\": \"<slightly tweaked title, UPPERCASE, \\n to split into 2 lines max \u2014 keep concise>\",\n  \"badge\": \"<short badge: CRITICAL CVE | SECURITY UPDATE | DATA BREACH | MALWARE ALERT | SECURITY GUIDE | THREAT INTEL>\",\n  \"pills\": [\"<tag1>\", \"<tag2>\", \"<tag3 optional>\"],\n  \"body\": \"<1-2 sentences expanding on the news, for template 2 only, else empty string>\",\n  \"description\": \"<2-3 sentences, for template 3 only, else empty string>\",\n  \"caption\": \"<2-3 sentence explanation of the story suitable for Telegram>\\n\\n<6-8 hashtags on one line starting with #>\"\n}\n\nRules:\n- headline: UPPERCASE, max 40 chars per line, split with \\n if needed\n- pills: for CVE use [\"CVE-XXXX-XXXX\", \"CVSS: X.X\", \"PLATFORM\"]; for patches use [\"PLATFORM\", \"RISK LEVEL\"]; for guides use [\"BEGINNER FRIENDLY\", \"HANDS-ON\"]\n- caption: write it as a short engaging paragraph, then a blank line, then all hashtags space-separated starting with #CyberRangeLabs\n- Tweak headline just enough to be original (change 2-3 words)"
+              "content": "You are a cybersecurity social media manager for 'Cyber Range Labs'.\n\nGiven the article below, return ONLY a raw JSON object \u2014 no markdown, no explanation.\n\nArticle Title: {{ $json.title }}\nArticle Description: {{ $json.desc }}\n\nReturn this exact JSON:\n{\n  \"template\": <1=critical CVE/breach/exploit, 2=patch/news/update, 3=guide/tips/how-to>,\n  \"headline\": \"<tweaked title, UPPERCASE, max 40 chars per line, use \\\\n to split if needed>\",\n  \"badge\": \"<one of: CRITICAL CVE | SECURITY UPDATE | DATA BREACH | MALWARE ALERT | SECURITY GUIDE | THREAT INTEL>\",\n  \"pills\": [\"<tag1>\",\"<tag2>\",\"<tag3 optional>\"],\n  \"body\": \"<1-2 sentence expansion for template 2, else empty string>\",\n  \"description\": \"<2-3 sentences for template 3, else empty string>\",\n  \"caption\": \"<2-3 sentence engaging summary>\\n\\n<6-8 hashtags starting with #CyberRangeLabs>\"\n}\n\nRules:\n- headline must be UPPERCASE and slightly different from the original title (change 2-3 words)\n- for CVE use pills like [\\\"CVE-XXXX-XXXX\\\",\\\"CVSS: X.X\\\",\\\"PLATFORM\\\"]\n- caption: paragraph then blank line then hashtags all on one line"
             }
           ],
           "temperature": 0.7,
-          "max_tokens": 800
+          "max_tokens": 700
         },
         "options": {
           "timeout": 30000
         }
       },
-      "id": "node-ai",
-      "name": "AI: Groq (Tweak & Classify)",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": {
-        "x": 1420,
-        "y": 300
-      },
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "groq-api-cred",
-          "name": "Groq API Key"
-        }
-      },
       "onError": "continueErrorOutput"
     },
     {
-      "parameters": {
-        "jsCode": "\nconst item = $input.first().json;\nconst origTitle  = $('One At A Time').first().json.title  || '';\nconst origDesc   = $('One At A Time').first().json.desc   || '';\nconst imageUrl   = $('One At A Time').first().json.imageUrl || '';\n\n// Extract AI response text\nlet aiText = '';\ntry {\n  aiText = item.choices[0].message.content || '';\n} catch(e) {\n  aiText = '';\n}\n\nlet parsed = null;\n\n// Try to extract JSON from AI response (handle markdown code blocks too)\nconst jsonMatch = aiText.match(/```(?:json)?\\s*([\\s\\S]*?)```/) || aiText.match(/(\\{[\\s\\S]*\\})/);\nif (jsonMatch) {\n  try { parsed = JSON.parse(jsonMatch[1].trim()); } catch(e) {}\n}\nif (!parsed) {\n  try { parsed = JSON.parse(aiText.trim()); } catch(e) {}\n}\n\n// Fallback: build a safe default from the original article\nif (!parsed || !parsed.headline) {\n  const title = origTitle.toUpperCase().slice(0, 80);\n  const isCVE     = /cve|vuln|exploit|zero.?day|breach|hack/i.test(origTitle);\n  const isPatch   = /patch|update|fix|release|new version/i.test(origTitle);\n  parsed = {\n    template:    isCVE ? 1 : (isPatch ? 2 : 3),\n    headline:    title,\n    badge:       isCVE ? 'SECURITY ALERT' : (isPatch ? 'SECURITY UPDATE' : 'SECURITY GUIDE'),\n    pills:       [],\n    body:        origDesc.slice(0, 200),\n    description: origDesc.slice(0, 300),\n    caption:     `${origDesc.slice(0, 250)}\\n\\n#CyberRangeLabs #CyberSecurity #InfoSec #Hacking`\n  };\n}\n\n// Ensure template is valid integer\nparsed.template = parseInt(parsed.template) || 1;\nif (![1,2,3].includes(parsed.template)) parsed.template = 1;\n\n// Add image URL from RSS\nparsed.image_url   = imageUrl;\nparsed.output_path = '/root/Desktop/crl_output.png';\nparsed.original_link = $('One At A Time').first().json.link || '';\nparsed.caption     = parsed.caption || `${origDesc.slice(0,200)}\\n\\n#CyberRangeLabs #CyberSecurity`;\n\nreturn [{ json: parsed }];\n"
-      },
-      "id": "node-parse-ai",
-      "name": "Parse AI Response",
+      "id": "n11",
+      "name": "Generate Post Image",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": {
-        "x": 1640,
-        "y": 300
+      "position": [
+        1680,
+        420
+      ],
+      "parameters": {
+        "jsCode": "\nconst { execSync } = require('child_process');\nconst fs = require('fs');\n\n// \u2500\u2500 Get AI response \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst item = $input.first().json;\n\n// \u2500\u2500 Get original article data from the loop \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nlet origTitle = '', origDesc = '', imageUrl = '';\ntry {\n  const loopItem = $('One At A Time').first().json;\n  origTitle = loopItem.title  || '';\n  origDesc  = loopItem.desc   || '';\n  imageUrl  = loopItem.imageUrl || '';\n} catch(e) {}\n\n// \u2500\u2500 Parse AI JSON response \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nlet aiText = '';\ntry { aiText = item.choices[0].message.content || ''; } catch(e) {}\n\nlet parsed = null;\n\n// Handle markdown code block or raw JSON\nconst cbMatch = aiText.match(/```(?:json)?\\s*([\\s\\S]*?)```/);\nif (cbMatch) {\n  try { parsed = JSON.parse(cbMatch[1].trim()); } catch(e) {}\n}\nif (!parsed) {\n  const braceMatch = aiText.match(/(\\{[\\s\\S]*\\})/);\n  if (braceMatch) {\n    try { parsed = JSON.parse(braceMatch[1].trim()); } catch(e) {}\n  }\n}\nif (!parsed) {\n  try { parsed = JSON.parse(aiText.trim()); } catch(e) {}\n}\n\n// \u2500\u2500 Fallback if AI fails \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nif (!parsed || !parsed.headline) {\n  const upper   = origTitle.toUpperCase().slice(0, 80);\n  const isCVE   = /cve|vuln|exploit|zero.?day|breach|hack/i.test(origTitle);\n  const isPatch = /patch|update|fix|release/i.test(origTitle);\n  parsed = {\n    template:    isCVE ? 1 : (isPatch ? 2 : 3),\n    headline:    upper,\n    badge:       isCVE ? 'SECURITY ALERT' : (isPatch ? 'SECURITY UPDATE' : 'SECURITY GUIDE'),\n    pills:       [],\n    body:        origDesc.slice(0, 200),\n    description: origDesc.slice(0, 300),\n    caption:     `${origDesc.slice(0, 250)}\\n\\n#CyberRangeLabs #CyberSecurity #InfoSec #Hacking`\n  };\n}\n\n// \u2500\u2500 Sanitise fields \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nparsed.template    = parseInt(parsed.template) || 1;\nif (![1,2,3].includes(parsed.template)) parsed.template = 1;\nparsed.image_url   = imageUrl;\nparsed.output_path = '/root/Desktop/crl_output.png';\nif (!parsed.caption) {\n  parsed.caption = `${origDesc.slice(0, 250)}\\n\\n#CyberRangeLabs #CyberSecurity #InfoSec`;\n}\n\n// \u2500\u2500 Run Python image generator \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst jsonStr = JSON.stringify(parsed).replace(/'/g, \"'\\\\''\");\nconst cmd     = `python3 /root/Desktop/crl_poster.py '${jsonStr}'`;\n\nlet imgPath = '/root/Desktop/crl_output.png';\ntry {\n  const out = execSync(cmd, { encoding: 'utf8', timeout: 60000 }).trim();\n  if (out && out.endsWith('.png')) imgPath = out;\n} catch(e) {\n  throw new Error('Python script failed: ' + e.message.slice(0, 500));\n}\n\nif (!fs.existsSync(imgPath)) {\n  throw new Error('Output image not found at: ' + imgPath);\n}\n\n// \u2500\u2500 Read image \u2192 base64 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst b64 = fs.readFileSync(imgPath).toString('base64');\n\nreturn [{\n  json: { caption: parsed.caption, image_path: imgPath },\n  binary: {\n    photo: {\n      data:     b64,\n      mimeType: 'image/png',\n      fileName: 'crl_post.png'\n    }\n  }\n}];\n"
       }
     },
     {
-      "parameters": {
-        "jsCode": "\nconst data = $input.first().json;\n// Build safe JSON string (escape single quotes for shell)\nconst jsonStr = JSON.stringify(data).replace(/'/g, \"'\\\\''\");\nreturn [{ json: { command: `python3 /root/Desktop/crl_poster.py '${jsonStr}'`, postData: data } }];\n"
-      },
-      "id": "node-prep-cmd",
-      "name": "Prepare Command",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": {
-        "x": 1860,
-        "y": 300
-      }
-    },
-    {
-      "parameters": {
-        "command": "={{ $json.command }}"
-      },
-      "id": "node-exec",
-      "name": "Generate Image",
-      "type": "n8n-nodes-base.executeCommand",
-      "typeVersion": 1,
-      "position": {
-        "x": 2080,
-        "y": 300
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "jsCode": "\nconst fs   = require('fs');\nconst path = require('path');\n\n// Get output path from exec stdout or default\nconst stdout = ($input.first().json.stdout || '').trim();\nconst imgPath = stdout && stdout.endsWith('.png') ? stdout : '/root/Desktop/crl_output.png';\n\nif (!fs.existsSync(imgPath)) {\n  throw new Error(`Image file not found: ${imgPath}. Check Python script output.`);\n}\n\nconst buf      = fs.readFileSync(imgPath);\nconst b64      = buf.toString('base64');\nconst caption  = $('Parse AI Response').first().json.caption || '#CyberRangeLabs';\nconst origLink = $('Parse AI Response').first().json.original_link || '';\n\nreturn [{\n  json: { caption, original_link: origLink, image_path: imgPath },\n  binary: {\n    photo: {\n      data:     b64,\n      mimeType: 'image/png',\n      fileName: 'crl_post.png'\n    }\n  }\n}];\n"
-      },
-      "id": "node-read-img",
-      "name": "Read Image File",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": {
-        "x": 2300,
-        "y": 300
-      }
-    },
-    {
+      "id": "n12",
+      "name": "Send to Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1920,
+        420
+      ],
       "parameters": {
         "resource": "message",
         "operation": "sendPhoto",
@@ -278,20 +242,12 @@
         "binaryPropertyName": "photo",
         "additionalFields": {
           "caption": "={{ $json.caption }}",
-          "parseMode": "Markdown"
+          "parseMode": "None"
         }
-      },
-      "id": "node-telegram",
-      "name": "Send to Telegram",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": {
-        "x": 2520,
-        "y": 300
       },
       "credentials": {
         "telegramApi": {
-          "id": "telegram-bot-cred",
+          "id": "telegram-cred-id",
           "name": "Telegram Bot"
         }
       },
@@ -411,7 +367,7 @@
       "main": [
         [
           {
-            "node": "AI: Groq (Tweak & Classify)",
+            "node": "AI: Groq",
             "type": "main",
             "index": 0
           }
@@ -419,65 +375,25 @@
         []
       ]
     },
-    "AI: Groq (Tweak & Classify)": {
+    "AI: Groq": {
       "main": [
         [
           {
-            "node": "Parse AI Response",
+            "node": "Generate Post Image",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Parse AI Response",
+            "node": "Generate Post Image",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Parse AI Response": {
-      "main": [
-        [
-          {
-            "node": "Prepare Command",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Prepare Command": {
-      "main": [
-        [
-          {
-            "node": "Generate Image",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Generate Image": {
-      "main": [
-        [
-          {
-            "node": "Read Image File",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Read Image File",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Read Image File": {
+    "Generate Post Image": {
       "main": [
         [
           {
@@ -504,10 +420,19 @@
   "settings": {
     "executionOrder": "v1",
     "saveManualExecutions": true,
-    "callerPolicy": "workflowsFromSameOwner",
-    "errorWorkflow": ""
+    "callerPolicy": "workflowsFromSameOwner"
   },
-  "versionId": "1",
-  "id": "crl-auto-poster-v1",
-  "tags": []
+  "versionId": "2",
+  "id": "crl-auto-poster-v2",
+  "tags": [
+    {
+      "name": "Cybersecurity"
+    },
+    {
+      "name": "Cyber Range Labs"
+    },
+    {
+      "name": "Social Media"
+    }
+  ]
 }
