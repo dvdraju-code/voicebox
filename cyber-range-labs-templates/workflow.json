@@ -1,0 +1,513 @@
+{
+  "name": "Cyber Range Labs \u2014 Auto Post Generator",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "node-trigger",
+      "name": "\u25b6 Run Manually",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": {
+        "x": 200,
+        "y": 300
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://feeds.feedburner.com/TheHackersNews",
+        "options": {
+          "timeout": 10000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          }
+        }
+      },
+      "id": "node-rss-1",
+      "name": "RSS: The Hacker News",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": {
+        "x": 460,
+        "y": 60
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://www.bleepingcomputer.com/feed/",
+        "options": {
+          "timeout": 10000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          }
+        }
+      },
+      "id": "node-rss-2",
+      "name": "RSS: BleepingComputer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": {
+        "x": 460,
+        "y": 220
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://www.cisa.gov/feeds/hns.xml",
+        "options": {
+          "timeout": 10000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          }
+        }
+      },
+      "id": "node-rss-3",
+      "name": "RSS: CISA Alerts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": {
+        "x": 460,
+        "y": 380
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://www.darkreading.com/rss.xml",
+        "options": {
+          "timeout": 10000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          }
+        }
+      },
+      "id": "node-rss-4",
+      "name": "RSS: Dark Reading",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": {
+        "x": 460,
+        "y": 540
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://krebsonsecurity.com/feed/",
+        "options": {
+          "timeout": 10000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          }
+        }
+      },
+      "id": "node-rss-5",
+      "name": "RSS: Krebs on Security",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": {
+        "x": 460,
+        "y": 700
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "append",
+        "options": {}
+      },
+      "id": "node-merge",
+      "name": "Merge RSS",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": {
+        "x": 720,
+        "y": 300
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst items = [];\nconst seenLinks = new Set();\n\nfor (const input of $input.all()) {\n  const xml = input.json.data || input.json.body || '';\n  if (!xml) continue;\n\n  // Extract all <item> blocks\n  const itemMatches = xml.matchAll(/<item[^>]*>([\\s\\S]*?)<\\/item>/gi);\n  for (const m of itemMatches) {\n    const block = m[1];\n\n    const tag = (name) => {\n      const r = block.match(new RegExp(`<${name}[^>]*>(?:<!\\\\[CDATA\\\\[)?([\\\\s\\\\S]*?)(?:\\\\]\\\\]>)?<\\\\/${name}>`, 'i'));\n      return r ? r[1].trim() : '';\n    };\n\n    const link    = tag('link') || tag('guid');\n    const title   = tag('title').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&#039;/g,\"'\").replace(/&quot;/g,'\"');\n    const desc    = tag('description').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').trim().slice(0,400);\n    const pubDate = tag('pubDate');\n\n    // Try to get image from media:content, enclosure, or og tag in description\n    let imageUrl = '';\n    const mediaMatch = block.match(/media:content[^>]+url=\"([^\"]+)\"/i)\n                    || block.match(/enclosure[^>]+url=\"([^\"]+)\"/i);\n    if (mediaMatch) imageUrl = mediaMatch[1];\n\n    if (!link || seenLinks.has(link)) continue;\n    seenLinks.add(link);\n\n    items.push({ title, link, desc, pubDate, imageUrl });\n  }\n}\n\n// Sort by most recent (if pubDate available), take top 5\nitems.sort((a,b) => {\n  const da = a.pubDate ? new Date(a.pubDate) : new Date(0);\n  const db = b.pubDate ? new Date(b.pubDate) : new Date(0);\n  return db - da;\n});\n\nreturn items.slice(0, 5).map(a => ({ json: a }));\n"
+      },
+      "id": "node-parse",
+      "name": "Parse RSS Articles",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": {
+        "x": 980,
+        "y": 300
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "node-split",
+      "name": "One At A Time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": {
+        "x": 1200,
+        "y": 300
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": {
+          "model": "llama-3.3-70b-versatile",
+          "messages": [
+            {
+              "role": "user",
+              "content": "You are a cybersecurity social media manager for \"Cyber Range Labs\".\n\nGiven the article title and description below, return a JSON object (no markdown, no explanation \u2014 raw JSON only).\n\nArticle Title: {{ $json.title }}\nArticle Description: {{ $json.desc }}\n\nReturn this exact JSON structure:\n{\n  \"template\": <1 for critical CVE/breach/exploit, 2 for patch/update/news, 3 for guide/tips/how-to>,\n  \"headline\": \"<slightly tweaked title, UPPERCASE, \\n to split into 2 lines max \u2014 keep concise>\",\n  \"badge\": \"<short badge: CRITICAL CVE | SECURITY UPDATE | DATA BREACH | MALWARE ALERT | SECURITY GUIDE | THREAT INTEL>\",\n  \"pills\": [\"<tag1>\", \"<tag2>\", \"<tag3 optional>\"],\n  \"body\": \"<1-2 sentences expanding on the news, for template 2 only, else empty string>\",\n  \"description\": \"<2-3 sentences, for template 3 only, else empty string>\",\n  \"caption\": \"<2-3 sentence explanation of the story suitable for Telegram>\\n\\n<6-8 hashtags on one line starting with #>\"\n}\n\nRules:\n- headline: UPPERCASE, max 40 chars per line, split with \\n if needed\n- pills: for CVE use [\"CVE-XXXX-XXXX\", \"CVSS: X.X\", \"PLATFORM\"]; for patches use [\"PLATFORM\", \"RISK LEVEL\"]; for guides use [\"BEGINNER FRIENDLY\", \"HANDS-ON\"]\n- caption: write it as a short engaging paragraph, then a blank line, then all hashtags space-separated starting with #CyberRangeLabs\n- Tweak headline just enough to be original (change 2-3 words)"
+            }
+          ],
+          "temperature": 0.7,
+          "max_tokens": 800
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-ai",
+      "name": "AI: Groq (Tweak & Classify)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": {
+        "x": 1420,
+        "y": 300
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "groq-api-cred",
+          "name": "Groq API Key"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst item = $input.first().json;\nconst origTitle  = $('One At A Time').first().json.title  || '';\nconst origDesc   = $('One At A Time').first().json.desc   || '';\nconst imageUrl   = $('One At A Time').first().json.imageUrl || '';\n\n// Extract AI response text\nlet aiText = '';\ntry {\n  aiText = item.choices[0].message.content || '';\n} catch(e) {\n  aiText = '';\n}\n\nlet parsed = null;\n\n// Try to extract JSON from AI response (handle markdown code blocks too)\nconst jsonMatch = aiText.match(/```(?:json)?\\s*([\\s\\S]*?)```/) || aiText.match(/(\\{[\\s\\S]*\\})/);\nif (jsonMatch) {\n  try { parsed = JSON.parse(jsonMatch[1].trim()); } catch(e) {}\n}\nif (!parsed) {\n  try { parsed = JSON.parse(aiText.trim()); } catch(e) {}\n}\n\n// Fallback: build a safe default from the original article\nif (!parsed || !parsed.headline) {\n  const title = origTitle.toUpperCase().slice(0, 80);\n  const isCVE     = /cve|vuln|exploit|zero.?day|breach|hack/i.test(origTitle);\n  const isPatch   = /patch|update|fix|release|new version/i.test(origTitle);\n  parsed = {\n    template:    isCVE ? 1 : (isPatch ? 2 : 3),\n    headline:    title,\n    badge:       isCVE ? 'SECURITY ALERT' : (isPatch ? 'SECURITY UPDATE' : 'SECURITY GUIDE'),\n    pills:       [],\n    body:        origDesc.slice(0, 200),\n    description: origDesc.slice(0, 300),\n    caption:     `${origDesc.slice(0, 250)}\\n\\n#CyberRangeLabs #CyberSecurity #InfoSec #Hacking`\n  };\n}\n\n// Ensure template is valid integer\nparsed.template = parseInt(parsed.template) || 1;\nif (![1,2,3].includes(parsed.template)) parsed.template = 1;\n\n// Add image URL from RSS\nparsed.image_url   = imageUrl;\nparsed.output_path = '/root/Desktop/crl_output.png';\nparsed.original_link = $('One At A Time').first().json.link || '';\nparsed.caption     = parsed.caption || `${origDesc.slice(0,200)}\\n\\n#CyberRangeLabs #CyberSecurity`;\n\nreturn [{ json: parsed }];\n"
+      },
+      "id": "node-parse-ai",
+      "name": "Parse AI Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": {
+        "x": 1640,
+        "y": 300
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst data = $input.first().json;\n// Build safe JSON string (escape single quotes for shell)\nconst jsonStr = JSON.stringify(data).replace(/'/g, \"'\\\\''\");\nreturn [{ json: { command: `python3 /root/Desktop/crl_poster.py '${jsonStr}'`, postData: data } }];\n"
+      },
+      "id": "node-prep-cmd",
+      "name": "Prepare Command",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": {
+        "x": 1860,
+        "y": 300
+      }
+    },
+    {
+      "parameters": {
+        "command": "={{ $json.command }}"
+      },
+      "id": "node-exec",
+      "name": "Generate Image",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": {
+        "x": 2080,
+        "y": 300
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst fs   = require('fs');\nconst path = require('path');\n\n// Get output path from exec stdout or default\nconst stdout = ($input.first().json.stdout || '').trim();\nconst imgPath = stdout && stdout.endsWith('.png') ? stdout : '/root/Desktop/crl_output.png';\n\nif (!fs.existsSync(imgPath)) {\n  throw new Error(`Image file not found: ${imgPath}. Check Python script output.`);\n}\n\nconst buf      = fs.readFileSync(imgPath);\nconst b64      = buf.toString('base64');\nconst caption  = $('Parse AI Response').first().json.caption || '#CyberRangeLabs';\nconst origLink = $('Parse AI Response').first().json.original_link || '';\n\nreturn [{\n  json: { caption, original_link: origLink, image_path: imgPath },\n  binary: {\n    photo: {\n      data:     b64,\n      mimeType: 'image/png',\n      fileName: 'crl_post.png'\n    }\n  }\n}];\n"
+      },
+      "id": "node-read-img",
+      "name": "Read Image File",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": {
+        "x": 2300,
+        "y": 300
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendPhoto",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "binaryData": true,
+        "binaryPropertyName": "photo",
+        "additionalFields": {
+          "caption": "={{ $json.caption }}",
+          "parseMode": "Markdown"
+        }
+      },
+      "id": "node-telegram",
+      "name": "Send to Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": {
+        "x": 2520,
+        "y": 300
+      },
+      "credentials": {
+        "telegramApi": {
+          "id": "telegram-bot-cred",
+          "name": "Telegram Bot"
+        }
+      },
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "connections": {
+    "\u25b6 Run Manually": {
+      "main": [
+        [
+          {
+            "node": "RSS: The Hacker News",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS: BleepingComputer",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS: CISA Alerts",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS: Dark Reading",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS: Krebs on Security",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS: The Hacker News": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS: BleepingComputer": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "RSS: CISA Alerts": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "RSS: Dark Reading": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "RSS: Krebs on Security": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Merge RSS": {
+      "main": [
+        [
+          {
+            "node": "Parse RSS Articles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse RSS Articles": {
+      "main": [
+        [
+          {
+            "node": "One At A Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One At A Time": {
+      "main": [
+        [
+          {
+            "node": "AI: Groq (Tweak & Classify)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "AI: Groq (Tweak & Classify)": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Parse AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Response": {
+      "main": [
+        [
+          {
+            "node": "Prepare Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Command": {
+      "main": [
+        [
+          {
+            "node": "Generate Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image": {
+      "main": [
+        [
+          {
+            "node": "Read Image File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read Image File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Image File": {
+      "main": [
+        [
+          {
+            "node": "Send to Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to Telegram": {
+      "main": [
+        [
+          {
+            "node": "One At A Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "versionId": "1",
+  "id": "crl-auto-poster-v1",
+  "tags": []
+}
