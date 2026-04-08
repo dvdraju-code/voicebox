@@ -1,9 +1,9 @@
 {
-  "name": "Cyber Range Labs \u2014 Auto Post Generator",
+  "name": "Cyber Range Labs — Auto Post Generator",
   "nodes": [
     {
       "id": "n01",
-      "name": "\u25b6 Run Manually",
+      "name": "▶ Run Manually",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
@@ -245,7 +245,7 @@
           "messages": [
             {
               "role": "user",
-              "content": "You are a cybersecurity social media manager for 'Cyber Range Labs'.\n\nGiven the article below, return ONLY a raw JSON object \u2014 no markdown, no explanation.\n\nArticle Title: {{ $json.title }}\nArticle Description: {{ $json.desc }}\n\nReturn this exact JSON:\n{\n  \"template\": <1=critical CVE/breach/exploit, 2=patch/news/update, 3=guide/tips/how-to>,\n  \"headline\": \"<tweaked title, UPPERCASE, max 40 chars per line, use \\\\n to split if needed>\",\n  \"badge\": \"<one of: CRITICAL CVE | SECURITY UPDATE | DATA BREACH | MALWARE ALERT | SECURITY GUIDE | THREAT INTEL>\",\n  \"pills\": [\"<tag1>\",\"<tag2>\",\"<tag3 optional>\"],\n  \"body\": \"<1-2 sentence expansion for template 2, else empty string>\",\n  \"description\": \"<2-3 sentences for template 3, else empty string>\",\n  \"caption\": \"<2-3 sentence engaging summary>\\n\\n<6-8 hashtags starting with #CyberRangeLabs>\"\n}\n\nRules:\n- headline must be UPPERCASE and slightly different from the original title (change 2-3 words)\n- for CVE use pills like [\\\"CVE-XXXX-XXXX\\\",\\\"CVSS: X.X\\\",\\\"PLATFORM\\\"]\n- caption: paragraph then blank line then hashtags all on one line"
+              "content": "You are a cybersecurity social media manager for 'Cyber Range Labs'.\n\nGiven the article below, return ONLY a raw JSON object — no markdown, no explanation.\n\nArticle Title: {{ $json.title }}\nArticle Description: {{ $json.desc }}\n\nReturn this exact JSON:\n{\n  \"template\": <1=critical CVE/breach/exploit, 2=patch/news/update, 3=guide/tips/how-to>,\n  \"headline\": \"<tweaked title, UPPERCASE, max 40 chars per line, use \\\\n to split if needed>\",\n  \"badge\": \"<one of: CRITICAL CVE | SECURITY UPDATE | DATA BREACH | MALWARE ALERT | SECURITY GUIDE | THREAT INTEL>\",\n  \"pills\": [\"<tag1>\",\"<tag2>\",\"<tag3 optional>\"],\n  \"body\": \"<1-2 sentence expansion for template 2, else empty string>\",\n  \"description\": \"<2-3 sentences for template 3, else empty string>\",\n  \"caption\": \"<2-3 sentence engaging summary>\\n\\n<6-8 hashtags starting with #CyberRangeLabs>\"\n}\n\nRules:\n- headline must be UPPERCASE and slightly different from the original title (change 2-3 words)\n- for CVE use pills like [\\\"CVE-XXXX-XXXX\\\",\\\"CVSS: X.X\\\",\\\"PLATFORM\\\"]\n- caption: paragraph then blank line then hashtags all on one line"
             }
           ],
           "temperature": 0.7,
@@ -258,25 +258,12 @@
       "onError": "continueErrorOutput"
     },
     {
-      "id": "n11",
-      "name": "Generate Post Image",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1680,
-        420
-      ],
-      "parameters": {
-        "jsCode": "\nconst { execSync } = require('child_process');\nconst fs = require('fs');\n\n// \u2500\u2500 Get AI response \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst item = $input.first().json;\n\n// \u2500\u2500 Get original article data from the loop \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nlet origTitle = '', origDesc = '', imageUrl = '';\ntry {\n  const loopItem = $('One At A Time').first().json;\n  origTitle = loopItem.title  || '';\n  origDesc  = loopItem.desc   || '';\n  imageUrl  = loopItem.imageUrl || '';\n} catch(e) {}\n\n// \u2500\u2500 Parse AI JSON response \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nlet aiText = '';\ntry { aiText = item.choices[0].message.content || ''; } catch(e) {}\n\nlet parsed = null;\n\n// Handle markdown code block or raw JSON\nconst cbMatch = aiText.match(/```(?:json)?\\s*([\\s\\S]*?)```/);\nif (cbMatch) {\n  try { parsed = JSON.parse(cbMatch[1].trim()); } catch(e) {}\n}\nif (!parsed) {\n  const braceMatch = aiText.match(/(\\{[\\s\\S]*\\})/);\n  if (braceMatch) {\n    try { parsed = JSON.parse(braceMatch[1].trim()); } catch(e) {}\n  }\n}\nif (!parsed) {\n  try { parsed = JSON.parse(aiText.trim()); } catch(e) {}\n}\n\n// \u2500\u2500 Fallback if AI fails \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nif (!parsed || !parsed.headline) {\n  const upper   = origTitle.toUpperCase().slice(0, 80);\n  const isCVE   = /cve|vuln|exploit|zero.?day|breach|hack/i.test(origTitle);\n  const isPatch = /patch|update|fix|release/i.test(origTitle);\n  parsed = {\n    template:    isCVE ? 1 : (isPatch ? 2 : 3),\n    headline:    upper,\n    badge:       isCVE ? 'SECURITY ALERT' : (isPatch ? 'SECURITY UPDATE' : 'SECURITY GUIDE'),\n    pills:       [],\n    body:        origDesc.slice(0, 200),\n    description: origDesc.slice(0, 300),\n    caption:     `${origDesc.slice(0, 250)}\\n\\n#CyberRangeLabs #CyberSecurity #InfoSec #Hacking`\n  };\n}\n\n// \u2500\u2500 Sanitise fields \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nparsed.template    = parseInt(parsed.template) || 1;\nif (![1,2,3].includes(parsed.template)) parsed.template = 1;\nparsed.image_url   = imageUrl;\nparsed.output_path = '/root/Desktop/crl_output.png';\nif (!parsed.caption) {\n  parsed.caption = `${origDesc.slice(0, 250)}\\n\\n#CyberRangeLabs #CyberSecurity #InfoSec`;\n}\n\n// \u2500\u2500 Run Python image generator \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst jsonStr = JSON.stringify(parsed).replace(/'/g, \"'\\\\''\");\nconst cmd     = `python3 /root/Desktop/crl_poster.py '${jsonStr}'`;\n\nlet imgPath = '/root/Desktop/crl_output.png';\ntry {\n  const out = execSync(cmd, { encoding: 'utf8', timeout: 60000 }).trim();\n  if (out && out.endsWith('.png')) imgPath = out;\n} catch(e) {\n  throw new Error('Python script failed: ' + e.message.slice(0, 500));\n}\n\nif (!fs.existsSync(imgPath)) {\n  throw new Error('Output image not found at: ' + imgPath);\n}\n\n// \u2500\u2500 Read image \u2192 base64 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\nconst b64 = fs.readFileSync(imgPath).toString('base64');\n\nreturn [{\n  json: { caption: parsed.caption, image_path: imgPath },\n  binary: {\n    photo: {\n      data:     b64,\n      mimeType: 'image/png',\n      fileName: 'crl_post.png'\n    }\n  }\n}];\n"
-      }
-    },
-    {
       "id": "n12",
       "name": "Send to Telegram",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1920,
+        2400,
         420
       ],
       "parameters": {
@@ -308,12 +295,51 @@
         420
       ],
       "parameters": {
-        "jsCode": "// n8n static data (persisted inside the workflow, no fs needed)\nconst staticData = $getWorkflowStaticData('global');\nlet seen = staticData.seenLinks || [];\nconst seenSet = new Set(seen);\n\n// Filter out articles already seen\nconst newItems = [];\nfor (const item of $input.all()) {\n  const link = item.json.link || '';\n  if (link && seenSet.has(link)) continue;\n  newItems.push(item);\n}\n\nif (newItems.length === 0) {\n  // Nothing new \u2014 end workflow gracefully\n  return [];\n}\n\n// Persist newly seen links (keep last 500)\nfor (const item of newItems) {\n  const link = item.json.link || '';\n  if (link) seen.push(link);\n}\nstaticData.seenLinks = seen.slice(-500);\n\nreturn newItems;\n"
+        "jsCode": "// n8n static data (persisted inside the workflow, no fs needed)\nconst staticData = $getWorkflowStaticData('global');\nlet seen = staticData.seenLinks || [];\nconst seenSet = new Set(seen);\n\n// Filter out articles already seen\nconst newItems = [];\nfor (const item of $input.all()) {\n  const link = item.json.link || '';\n  if (link && seenSet.has(link)) continue;\n  newItems.push(item);\n}\n\nif (newItems.length === 0) {\n  // Nothing new — end workflow gracefully\n  return [];\n}\n\n// Persist newly seen links (keep last 500)\nfor (const item of newItems) {\n  const link = item.json.link || '';\n  if (link) seen.push(link);\n}\nstaticData.seenLinks = seen.slice(-500);\n\nreturn newItems;\n"
+      }
+    },
+    {
+      "id": "n11",
+      "name": "Prepare Post Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        420
+      ],
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n\n// ── Get original article data from the loop ─────────────────────────────────\nlet origTitle = '', origDesc = '', imageUrl = '';\ntry {\n  const loopItem = $('One At A Time').first().json;\n  origTitle = loopItem.title    || '';\n  origDesc  = loopItem.desc     || '';\n  imageUrl  = loopItem.imageUrl || '';\n} catch(e) {}\n\n// ── Parse AI JSON response ───────────────────────────────────────────────────\nlet aiText = '';\ntry { aiText = item.choices[0].message.content || ''; } catch(e) {}\n\nlet parsed = null;\n\nconst cbMatch = aiText.match(/```(?:json)?\\s*([\\s\\S]*?)```/);\nif (cbMatch) {\n  try { parsed = JSON.parse(cbMatch[1].trim()); } catch(e) {}\n}\nif (!parsed) {\n  const braceMatch = aiText.match(/(\\{[\\s\\S]*\\})/);\n  if (braceMatch) {\n    try { parsed = JSON.parse(braceMatch[1].trim()); } catch(e) {}\n  }\n}\nif (!parsed) {\n  try { parsed = JSON.parse(aiText.trim()); } catch(e) {}\n}\n\n// ── Fallback if AI fails ─────────────────────────────────────────────────────\nif (!parsed || !parsed.headline) {\n  const upper   = origTitle.toUpperCase().slice(0, 80);\n  const isCVE   = /cve|vuln|exploit|zero.?day|breach|hack/i.test(origTitle);\n  const isPatch = /patch|update|fix|release/i.test(origTitle);\n  parsed = {\n    template:    isCVE ? 1 : (isPatch ? 2 : 3),\n    headline:    upper,\n    badge:       isCVE ? 'SECURITY ALERT' : (isPatch ? 'SECURITY UPDATE' : 'SECURITY GUIDE'),\n    pills:       [],\n    body:        origDesc.slice(0, 200),\n    description: origDesc.slice(0, 300),\n    caption:     `${origDesc.slice(0, 250)}\\n\\n#CyberRangeLabs #CyberSecurity #InfoSec #Hacking`\n  };\n}\n\n// ── Sanitise fields ──────────────────────────────────────────────────────────\nparsed.template    = parseInt(parsed.template) || 1;\nif (![1,2,3].includes(parsed.template)) parsed.template = 1;\nparsed.image_url   = imageUrl;\nparsed.output_path = '/root/Desktop/crl_output.png';\nif (!parsed.caption) {\n  parsed.caption = `${origDesc.slice(0, 250)}\\n\\n#CyberRangeLabs #CyberSecurity #InfoSec`;\n}\n\n// ── Encode JSON as base64 for safe shell-passing ─────────────────────────────\n// Avoids single-quote escaping issues in the Execute Command node.\nconst cmdArg = Buffer.from(JSON.stringify(parsed)).toString('base64');\n\nreturn [{ json: { ...parsed, cmdArg } }];"
+      }
+    },
+    {
+      "id": "n14",
+      "name": "Run Image Script",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        420
+      ],
+      "parameters": {
+        "command": "python3 /root/Desktop/crl_poster.py 'base64:{{ $json.cmdArg }}'"
+      }
+    },
+    {
+      "id": "n15",
+      "name": "Format Image for Telegram",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2160,
+        420
+      ],
+      "parameters": {
+        "jsCode": "const cmdOut  = $input.first().json;\nconst b64     = (cmdOut.stdout || '').trim();\n\nif (!b64 || b64.length < 100) {\n  const errDetail = (cmdOut.stderr || '').slice(0, 400);\n  throw new Error('Python image generator produced no output. stderr: ' + errDetail);\n}\n\n// Retrieve caption from the upstream Prepare Post Data node\nlet caption = '';\ntry { caption = $('Prepare Post Data').first().json.caption || ''; } catch(e) {}\n\nreturn [{\n  json: { caption, image_path: '/root/Desktop/crl_output.png' },\n  binary: {\n    photo: {\n      data:     b64,\n      mimeType: 'image/png',\n      fileName: 'crl_post.png'\n    }\n  }\n}];"
       }
     }
   ],
   "connections": {
-    "\u25b6 Run Manually": {
+    "▶ Run Manually": {
       "main": [
         [
           {
@@ -437,29 +463,12 @@
       "main": [
         [
           {
-            "node": "Generate Post Image",
+            "node": "Prepare Post Data",
             "type": "main",
             "index": 0
           }
         ],
-        [
-          {
-            "node": "Generate Post Image",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Generate Post Image": {
-      "main": [
-        [
-          {
-            "node": "Send to Telegram",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Send to Telegram": {
@@ -478,6 +487,39 @@
         [
           {
             "node": "One At A Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Post Data": {
+      "main": [
+        [
+          {
+            "node": "Run Image Script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Image Script": {
+      "main": [
+        [
+          {
+            "node": "Format Image for Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Image for Telegram": {
+      "main": [
+        [
+          {
+            "node": "Send to Telegram",
             "type": "main",
             "index": 0
           }
