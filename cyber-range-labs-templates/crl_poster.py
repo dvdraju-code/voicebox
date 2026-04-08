@@ -487,15 +487,8 @@ def main():
         sys.exit(1)
 
     try:
-        arg = sys.argv[1]
-        # Accept base64-encoded JSON (prefix "base64:") to avoid shell-quoting issues
-        # when called from n8n's Execute Command node.
-        if arg.startswith('base64:'):
-            import base64 as _b64
-            data = json.loads(_b64.b64decode(arg[7:]).decode('utf-8'))
-        else:
-            data = json.loads(arg)
-    except Exception as e:
+        data = json.loads(sys.argv[1])
+    except json.JSONDecodeError as e:
         print(f"Invalid JSON input: {e}", file=sys.stderr)
         sys.exit(1)
 
@@ -510,14 +503,7 @@ def main():
         img = RENDERERS[template](data)
         os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
         img.save(output_path, "PNG", optimize=False)
-        # Print base64-encoded PNG to stdout for n8n Execute Command integration.
-        # The Execute Command node captures stdout and passes it to the next Code node,
-        # eliminating the need for fs.readFileSync (which is blocked in n8n's sandbox).
-        import base64 as _b64, io as _io
-        buf = _io.BytesIO()
-        img.save(buf, "PNG", optimize=False)
-        buf.seek(0)
-        print(_b64.b64encode(buf.read()).decode('ascii'))
+        print(output_path)
     except Exception as e:
         traceback.print_exc(file=sys.stderr)
         print(f"Failed to generate image: {e}", file=sys.stderr)
